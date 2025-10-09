@@ -1,7 +1,14 @@
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FileText } from "lucide-react";
+import { FileText, Eye } from "lucide-react";
 import { useState } from "react";
+import slidePreview from "@/assets/slide-preview.jpg";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Slide {
   id: number;
@@ -15,6 +22,7 @@ interface Step2BasePresentationProps {
 
 export const Step2BasePresentation = ({ clientType }: Step2BasePresentationProps) => {
   const [selectedSlides, setSelectedSlides] = useState<number[]>([]);
+  const [previewSlide, setPreviewSlide] = useState<Slide | null>(null);
 
   // Mock slides - different based on client type
   const slides: Slide[] = clientType === "new" 
@@ -48,7 +56,7 @@ export const Step2BasePresentation = ({ clientType }: Step2BasePresentationProps
           Presentación Base - {clientType === "new" ? "Cliente Nuevo" : "Cliente Existente"}
         </h2>
         <p className="text-muted-foreground">
-          Selecciona los slides que deseas mantener en tu presentación. Los slides no seleccionados serán eliminados.
+          Selecciona los slides que deseas eliminar de tu presentación.
         </p>
       </div>
 
@@ -59,18 +67,17 @@ export const Step2BasePresentation = ({ clientType }: Step2BasePresentationProps
           return (
             <Card 
               key={slide.id}
-              className={`p-4 transition-all duration-200 cursor-pointer border-2 ${
+              className={`p-4 transition-all duration-200 border-2 ${
                 isSelected 
                   ? 'border-destructive bg-destructive/5' 
                   : 'border-slide-border hover:border-primary hover:shadow-md'
               }`}
-              onClick={() => toggleSlide(slide.id)}
             >
               <div className="flex items-center gap-4">
                 <Checkbox
                   checked={isSelected}
                   onCheckedChange={() => toggleSlide(slide.id)}
-                  className="data-[state=checked]:bg-destructive data-[state=checked]:border-destructive"
+                  className="data-[state=checked]:bg-destructive data-[state=checked]:border-destructive cursor-pointer"
                 />
                 
                 <div className="flex items-center gap-4 flex-1">
@@ -82,6 +89,13 @@ export const Step2BasePresentation = ({ clientType }: Step2BasePresentationProps
                     <h3 className="font-semibold text-foreground mb-1">{slide.title}</h3>
                     <p className="text-sm text-muted-foreground">{slide.preview}</p>
                   </div>
+                  
+                  <button
+                    onClick={() => setPreviewSlide(slide)}
+                    className="p-2 hover:bg-primary/10 rounded transition-colors"
+                  >
+                    <Eye className="w-5 h-5 text-primary" />
+                  </button>
                   
                   <span className="text-2xl font-bold text-muted-foreground/50">
                     {slide.id}
@@ -100,6 +114,22 @@ export const Step2BasePresentation = ({ clientType }: Step2BasePresentationProps
           </p>
         </Card>
       )}
+
+      <Dialog open={!!previewSlide} onOpenChange={() => setPreviewSlide(null)}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>{previewSlide?.title}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <img 
+              src={slidePreview} 
+              alt={previewSlide?.title} 
+              className="w-full rounded-lg border-2 border-border"
+            />
+            <p className="text-muted-foreground">{previewSlide?.preview}</p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

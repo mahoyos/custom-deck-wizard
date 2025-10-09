@@ -1,6 +1,6 @@
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { UserPlus, Users } from "lucide-react";
+import newClientImage from "@/assets/new-client.jpg";
+import existingClientImage from "@/assets/existing-client.jpg";
 
 interface Step1WelcomeProps {
   onSelectClientType: (type: "new" | "existing") => void;
@@ -8,43 +8,53 @@ interface Step1WelcomeProps {
 
 export const Step1Welcome = ({ onSelectClientType }: Step1WelcomeProps) => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
-      <div className="text-center mb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <h1 className="text-5xl font-bold text-foreground mb-4">
-          Slide Picker
+    <div className="max-w-6xl mx-auto px-4 py-8 animate-in fade-in slide-in-from-right-4 duration-500">
+      <div className="text-center mb-12">
+        <h1 className="text-4xl font-bold text-foreground mb-4">
+          Bienvenido a Maker
         </h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Crea presentaciones personalizadas en minutos. Selecciona el tipo de cliente para comenzar.
+        <p className="text-xl text-muted-foreground">
+          Selecciona el tipo de cliente para comenzar
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6 w-full max-w-3xl animate-in fade-in slide-in-from-bottom-8 duration-700 delay-150">
+      <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
         <Card 
-          className="p-8 cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 border-2 hover:border-primary group"
+          className="overflow-hidden cursor-pointer transition-all hover:shadow-xl hover:scale-105 border-2 hover:border-primary group"
           onClick={() => onSelectClientType("new")}
         >
-          <div className="flex flex-col items-center text-center gap-4">
-            <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary transition-colors duration-300">
-              <UserPlus className="w-10 h-10 text-primary group-hover:text-primary-foreground transition-colors duration-300" />
-            </div>
-            <h2 className="text-2xl font-bold text-foreground">Cliente Nuevo</h2>
+          <div className="relative h-48 overflow-hidden">
+            <img 
+              src={newClientImage} 
+              alt="Cliente Nuevo" 
+              className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent" />
+          </div>
+          <div className="p-8 text-center">
+            <h2 className="text-2xl font-semibold text-foreground mb-2">Cliente Nuevo</h2>
             <p className="text-muted-foreground">
-              Comienza con una presentación base para un cliente que inicia su relación con nosotros.
+              Crear una presentación para un cliente nuevo
             </p>
           </div>
         </Card>
 
         <Card 
-          className="p-8 cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 border-2 hover:border-primary group"
+          className="overflow-hidden cursor-pointer transition-all hover:shadow-xl hover:scale-105 border-2 hover:border-primary group"
           onClick={() => onSelectClientType("existing")}
         >
-          <div className="flex flex-col items-center text-center gap-4">
-            <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary transition-colors duration-300">
-              <Users className="w-10 h-10 text-primary group-hover:text-primary-foreground transition-colors duration-300" />
-            </div>
-            <h2 className="text-2xl font-bold text-foreground">Cliente Existente</h2>
+          <div className="relative h-48 overflow-hidden">
+            <img 
+              src={existingClientImage} 
+              alt="Cliente Existente" 
+              className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent" />
+          </div>
+          <div className="p-8 text-center">
+            <h2 className="text-2xl font-semibold text-foreground mb-2">Cliente Existente</h2>
             <p className="text-muted-foreground">
-              Personaliza la presentación con información de un cliente con historial previo.
+              Crear una presentación para un cliente existente
             </p>
           </div>
         </Card>

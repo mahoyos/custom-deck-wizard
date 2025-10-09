@@ -1,7 +1,17 @@
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronRight, ChevronDown, Folder, FileText } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ChevronRight, ChevronDown, Folder, FileText, Eye, Plus } from "lucide-react";
 import { useState } from "react";
+import slidePreview from "@/assets/slide-preview.jpg";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 
 interface ProductCategory {
   id: string;
@@ -62,6 +72,8 @@ const mockCategories: ProductCategory[] = [
 export const Step5AddProduct = () => {
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   const [selectedSlides, setSelectedSlides] = useState<number[]>([]);
+  const [previewSlide, setPreviewSlide] = useState<{ id: number; title: string } | null>(null);
+  const { toast } = useToast();
 
   const toggleCategory = (id: string) => {
     setExpandedCategories(prev =>
@@ -73,6 +85,17 @@ export const Step5AddProduct = () => {
     setSelectedSlides(prev =>
       prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
     );
+  };
+
+  const addSlideFromPreview = (id: number, title: string) => {
+    if (!selectedSlides.includes(id)) {
+      setSelectedSlides(prev => [...prev, id]);
+      toast({
+        title: "Slide añadido",
+        description: `"${title}" ha sido añadido a tu selección.`,
+      });
+    }
+    setPreviewSlide(null);
   };
 
   const renderCategory = (category: ProductCategory, level: number = 0) => {
@@ -109,20 +132,28 @@ export const Step5AddProduct = () => {
             {category.slides.map(slide => (
               <Card
                 key={slide.id}
-                className={`p-3 cursor-pointer transition-all border-2 ${
+                className={`p-3 transition-all border-2 ${
                   selectedSlides.includes(slide.id)
                     ? 'border-primary bg-primary/5'
                     : 'border-slide-border hover:border-primary/50'
                 }`}
-                onClick={() => toggleSlide(slide.id)}
               >
-                <div className="flex items-center gap-3">
-                  <Checkbox
-                    checked={selectedSlides.includes(slide.id)}
-                    onCheckedChange={() => toggleSlide(slide.id)}
-                  />
-                  <FileText className="w-4 h-4 text-primary" />
-                  <span className="text-sm">{slide.title}</span>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 flex-1">
+                    <Checkbox
+                      checked={selectedSlides.includes(slide.id)}
+                      onCheckedChange={() => toggleSlide(slide.id)}
+                      className="cursor-pointer"
+                    />
+                    <FileText className="w-4 h-4 text-primary" />
+                    <span className="text-sm">{slide.title}</span>
+                  </div>
+                  <button
+                    onClick={() => setPreviewSlide(slide)}
+                    className="p-1 hover:bg-primary/10 rounded transition-colors"
+                  >
+                    <Eye className="w-4 h-4 text-primary" />
+                  </button>
                 </div>
               </Card>
             ))}
@@ -175,6 +206,30 @@ export const Step5AddProduct = () => {
           )}
         </Card>
       </div>
+
+      <Dialog open={!!previewSlide} onOpenChange={() => setPreviewSlide(null)}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>{previewSlide?.title}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <img 
+              src={slidePreview} 
+              alt={previewSlide?.title} 
+              className="w-full rounded-lg border-2 border-border"
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={() => previewSlide && addSlideFromPreview(previewSlide.id, previewSlide.title)}
+              className="gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Añadir este slide
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
