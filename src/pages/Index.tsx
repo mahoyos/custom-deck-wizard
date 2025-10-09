@@ -18,6 +18,7 @@ const Index = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [clientType, setClientType] = useState<ClientType>(null);
   const [step5Mode, setStep5Mode] = useState<Step5Mode>("review");
+  const [identifications, setIdentifications] = useState<string[]>([]);
   const { toast } = useToast();
 
   const totalSteps = 6;
@@ -28,6 +29,16 @@ const Index = () => {
   };
 
   const handleNext = () => {
+    // Validate identifications for existing clients in step 3
+    if (currentStep === 3 && clientType === "existing" && identifications.length === 0) {
+      toast({
+        title: "Documentos requeridos",
+        description: "Debes ingresar al menos un documento de identificación para continuar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Skip step 3 if client is new
     if (currentStep === 2 && clientType === "new") {
       setCurrentStep(4);
@@ -80,6 +91,7 @@ const Index = () => {
       setCurrentStep(1);
       setClientType(null);
       setStep5Mode("review");
+      setIdentifications([]);
     }, 2000);
   };
 
@@ -90,7 +102,7 @@ const Index = () => {
       case 2:
         return <Step2BasePresentation clientType={clientType!} />;
       case 3:
-        return <Step3Identifications />;
+        return <Step3Identifications onIdentificationsChange={setIdentifications} />;
       case 4:
         return <Step4Review onAddProduct={handleAddProduct} onAddSlide={handleAddSlide} />;
       case 5:

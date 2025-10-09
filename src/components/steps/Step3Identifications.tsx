@@ -5,19 +5,27 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, X, User } from "lucide-react";
 import { useState } from "react";
 
-export const Step3Identifications = () => {
+interface Step3IdentificationsProps {
+  onIdentificationsChange?: (identifications: string[]) => void;
+}
+
+export const Step3Identifications = ({ onIdentificationsChange }: Step3IdentificationsProps) => {
   const [identifications, setIdentifications] = useState<string[]>([]);
   const [currentId, setCurrentId] = useState("");
 
   const addIdentification = () => {
     if (currentId.trim() && !identifications.includes(currentId.trim())) {
-      setIdentifications([...identifications, currentId.trim()]);
+      const newIdentifications = [...identifications, currentId.trim()];
+      setIdentifications(newIdentifications);
       setCurrentId("");
+      onIdentificationsChange?.(newIdentifications);
     }
   };
 
   const removeIdentification = (id: string) => {
-    setIdentifications(identifications.filter(i => i !== id));
+    const newIdentifications = identifications.filter(i => i !== id);
+    setIdentifications(newIdentifications);
+    onIdentificationsChange?.(newIdentifications);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {

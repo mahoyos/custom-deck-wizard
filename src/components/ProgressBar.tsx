@@ -11,11 +11,14 @@ const stepLabels = [
   "Presentación Base",
   "Identificaciones",
   "Revisión",
-  "Personalización",
   "Consolidar"
 ];
 
 export const ProgressBar = ({ currentStep, totalSteps }: ProgressBarProps) => {
+  // Map internal steps to display steps (4 and 5 show as same step)
+  const displayStep = currentStep === 5 ? 4 : currentStep > 5 ? currentStep - 1 : currentStep;
+  const displayTotalSteps = totalSteps - 1; // Show 5 steps instead of 6
+  
   return (
     <div className="w-full bg-card shadow-sm py-6 px-8 border-b border-border">
       <div className="max-w-5xl mx-auto">
@@ -24,18 +27,18 @@ export const ProgressBar = ({ currentStep, totalSteps }: ProgressBarProps) => {
           <div className="absolute top-5 left-0 right-0 h-1 bg-progress-bg -z-10">
             <div
               className="h-full bg-progress-fill transition-all duration-500 ease-out"
-              style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%` }}
+              style={{ width: `${((displayStep - 1) / (displayTotalSteps - 1)) * 100}%` }}
             />
           </div>
 
           {/* Steps */}
-          {Array.from({ length: totalSteps }, (_, i) => i + 1).map((step) => {
-            const isComplete = step < currentStep;
-            const isActive = step === currentStep;
-            const isFuture = step > currentStep;
+          {Array.from({ length: displayTotalSteps }, (_, i) => i + 1).map((step) => {
+            const isComplete = step < displayStep;
+            const isActive = step === displayStep;
+            const isFuture = step > displayStep;
 
             return (
-              <div key={step} className="flex flex-col items-center gap-2 bg-background px-2">
+              <div key={step} className="flex flex-col items-center gap-2 bg-card px-2">
                 <div
                   className={cn(
                     "w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300",
