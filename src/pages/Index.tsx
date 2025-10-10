@@ -21,7 +21,7 @@ const Index = () => {
   const [identifications, setIdentifications] = useState<string[]>([]);
   const { toast } = useToast();
 
-  const totalSteps = 6;
+  const totalSteps = 5;
 
   const handleClientTypeSelection = (type: "new" | "existing") => {
     setClientType(type);
@@ -43,22 +43,17 @@ const Index = () => {
     if (currentStep === 2 && clientType === "new") {
       setCurrentStep(4);
     } else if (currentStep === 4 && step5Mode !== "review") {
-      // If in add product or add slide mode, stay on step 5
-      setCurrentStep(5);
-    } else if (currentStep === 5 && step5Mode !== "review") {
-      // After adding products or slides, go back to step 4
+      // After adding products or slides, go back to review mode
       setStep5Mode("review");
-      setCurrentStep(4);
     } else if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     }
   };
 
   const handlePrevious = () => {
-    // If in step 5 add modes, go back to step 4
-    if (currentStep === 5 && step5Mode !== "review") {
+    // If in add modes in step 4, go back to review mode
+    if (currentStep === 4 && step5Mode !== "review") {
       setStep5Mode("review");
-      setCurrentStep(4);
       return;
     }
 
@@ -72,12 +67,10 @@ const Index = () => {
 
   const handleAddProduct = () => {
     setStep5Mode("addProduct");
-    setCurrentStep(5);
   };
 
   const handleAddSlide = () => {
     setStep5Mode("addSlide");
-    setCurrentStep(5);
   };
 
   const handleConsolidate = () => {
@@ -104,15 +97,13 @@ const Index = () => {
       case 3:
         return <Step3Identifications onIdentificationsChange={setIdentifications} />;
       case 4:
-        return <Step4Review onAddProduct={handleAddProduct} onAddSlide={handleAddSlide} />;
-      case 5:
         if (step5Mode === "addProduct") {
           return <Step5AddProduct />;
         } else if (step5Mode === "addSlide") {
           return <Step5AddSlide />;
         }
         return <Step4Review onAddProduct={handleAddProduct} onAddSlide={handleAddSlide} />;
-      case 6:
+      case 5:
         return <Step6Consolidate onConsolidate={handleConsolidate} />;
       default:
         return null;
