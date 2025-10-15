@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ProgressBar";
+import { UserHeader } from "@/components/UserHeader";
 import { Step1Welcome } from "@/components/steps/Step1Welcome";
 import { Step2BasePresentation } from "@/components/steps/Step2BasePresentation";
 import { Step3Identifications } from "@/components/steps/Step3Identifications";
@@ -19,6 +20,7 @@ const Index = () => {
   const [clientType, setClientType] = useState<ClientType>(null);
   const [step5Mode, setStep5Mode] = useState<Step5Mode>("review");
   const [identifications, setIdentifications] = useState<string[]>([]);
+  const [reportGenerated, setReportGenerated] = useState(false);
   const { toast } = useToast();
 
   const totalSteps = 5;
@@ -30,13 +32,23 @@ const Index = () => {
 
   const handleNext = () => {
     // Validate identifications for existing clients in step 3
-    if (currentStep === 3 && clientType === "existing" && identifications.length === 0) {
-      toast({
-        title: "Documentos requeridos",
-        description: "Debes ingresar al menos un documento de identificación para continuar.",
-        variant: "destructive",
-      });
-      return;
+    if (currentStep === 3 && clientType === "existing") {
+      if (identifications.length === 0) {
+        toast({
+          title: "Documentos requeridos",
+          description: "Debes ingresar al menos un documento de identificación para continuar.",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (!reportGenerated) {
+        toast({
+          title: "Reporte no generado",
+          description: "Debes confirmar las identificaciones y generar el reporte de desempeño antes de continuar.",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     // Skip step 3 if client is new
@@ -95,7 +107,12 @@ const Index = () => {
       case 2:
         return <Step2BasePresentation clientType={clientType!} />;
       case 3:
-        return <Step3Identifications onIdentificationsChange={setIdentifications} />;
+        return (
+          <Step3Identifications 
+            onIdentificationsChange={setIdentifications} 
+            onConfirmGeneration={setReportGenerated}
+          />
+        );
       case 4:
         if (step5Mode === "addProduct") {
           return <Step5AddProduct />;
@@ -116,6 +133,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <UserHeader />
+      
       {currentStep > 1 && (
         <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
       )}

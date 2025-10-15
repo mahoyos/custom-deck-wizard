@@ -12,6 +12,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { PresentationViewer } from "@/components/PresentationViewer";
+import { toast as sonnerToast } from "sonner";
 
 interface ProductCategory {
   id: string;
@@ -72,7 +74,9 @@ const mockCategories: ProductCategory[] = [
 export const Step5AddProduct = () => {
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   const [selectedSlides, setSelectedSlides] = useState<number[]>([]);
+  const [selectedSlidesForPreview, setSelectedSlidesForPreview] = useState<number[]>([]);
   const [previewSlide, setPreviewSlide] = useState<{ id: number; title: string } | null>(null);
+  const [previewMode, setPreviewMode] = useState(false);
   const { toast } = useToast();
 
   const toggleCategory = (id: string) => {
@@ -90,12 +94,21 @@ export const Step5AddProduct = () => {
   const addSlideFromPreview = (id: number, title: string) => {
     if (!selectedSlides.includes(id)) {
       setSelectedSlides(prev => [...prev, id]);
-      toast({
-        title: "Slide añadido",
-        description: `"${title}" ha sido añadido a tu selección.`,
-      });
+      sonnerToast.success(`"${title}" agregado a la presentación`);
     }
     setPreviewSlide(null);
+  };
+
+  const toggleSlideInPreview = (id: number) => {
+    setSelectedSlidesForPreview(prev => 
+      prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
+    );
+  };
+
+  const getAllSlidesFromCategory = (category: ProductCategory): { id: number; title: string }[] => {
+    const slides = category.slides || [];
+    const subSlides = category.subcategories?.flatMap(sub => getAllSlidesFromCategory(sub)) || [];
+    return [...slides, ...subSlides];
   };
 
   const renderCategory = (category: ProductCategory, level: number = 0) => {
@@ -163,6 +176,34 @@ export const Step5AddProduct = () => {
     );
   };
 
+  // Preview mode - show selected slides in PresentationViewer
+  if (previewMode && selectedSlides.length > 0) {
+    const selectedSlideDetails = mockCategories.flatMap(cat => 
+      getAllSlidesFromCategory(cat).filter(s => selectedSlides.includes(s.id))
+    ).map(slide => ({
+      ...slide,
+      description: `Slide de producto: ${slide.title}`
+    }));
+
+    return (
+      <div className="space-y-6">
+        <PresentationViewer
+          slides={selectedSlideDetails}
+          selectedSlides={selectedSlidesForPreview}
+          onSlideToggle={toggleSlideInPreview}
+          mode="add"
+          title="Vista Previa - Productos Seleccionados"
+          subtitle="Navega por los productos que has seleccionado. Puedes desmarcar los que no deseas agregar."
+        />
+        <div className="max-w-6xl mx-auto px-4">
+          <Button variant="outline" onClick={() => setPreviewMode(false)}>
+            Volver al Catálogo
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 animate-in fade-in slide-in-from-right-4 duration-500">
       <div className="mb-8">
@@ -190,13 +231,23 @@ export const Step5AddProduct = () => {
             Slides Seleccionados
           </h3>
           {selectedSlides.length > 0 ? (
-            <div className="space-y-2">
+            <div className="space-y-3">
               <div className="text-center p-4 bg-primary/10 rounded-lg">
                 <span className="text-3xl font-bold text-primary">{selectedSlides.length}</span>
                 <p className="text-sm text-muted-foreground mt-1">
                   slide(s) seleccionado(s)
                 </p>
               </div>
+              <Button 
+                className="w-full" 
+                onClick={() => {
+                  setSelectedSlidesForPreview([...selectedSlides]);
+                  setPreviewMode(true);
+                }}
+              >
+                <Eye className="w-4 h-4 mr-2" />
+                Previsualizar Selección
+              </Button>
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground">

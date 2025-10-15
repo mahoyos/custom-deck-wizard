@@ -1,62 +1,63 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { FileText, Plus, Image } from "lucide-react";
+import { Plus, Image } from "lucide-react";
+import { PresentationViewer } from "@/components/PresentationViewer";
 
 interface Step4ReviewProps {
   onAddProduct: () => void;
   onAddSlide: () => void;
 }
 
+interface Slide {
+  id: number;
+  title: string;
+  description: string;
+}
+
 export const Step4Review = ({ onAddProduct, onAddSlide }: Step4ReviewProps) => {
-  // Mock current presentation state
-  const currentSlides = 5;
+  const [selectedSlides, setSelectedSlides] = useState<number[]>([]);
+
+  // Mock consolidated presentation slides
+  const slides: Slide[] = [
+    { id: 1, title: "Portada", description: "Presentación de la empresa" },
+    { id: 2, title: "Servicios", description: "Nuestros servicios principales" },
+    { id: 3, title: "Productos", description: "Catálogo de productos" },
+    { id: 4, title: "Casos de Éxito", description: "Testimonios y resultados" },
+    { id: 5, title: "Contacto", description: "Información de contacto" },
+  ];
+
+  const toggleSlide = (id: number) => {
+    setSelectedSlides(prev => 
+      prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
+    );
+  };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 animate-in fade-in slide-in-from-right-4 duration-500">
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-foreground mb-2">
-          Revisión de Presentación
-        </h2>
-        <p className="text-muted-foreground">
-          Vista previa de tu presentación actual. Puedes agregar productos o slides personalizados.
-        </p>
-      </div>
+    <div className="space-y-6">
+      <PresentationViewer
+        slides={slides}
+        selectedSlides={selectedSlides}
+        onSlideToggle={toggleSlide}
+        mode="delete"
+        title="Revisión de Presentación"
+        subtitle="Navega por tu presentación consolidada y elimina slides si es necesario. También puedes agregar productos o slides personalizados."
+      />
 
-      <div className="grid lg:grid-cols-3 gap-6 mb-8">
-        <Card className="lg:col-span-2 p-6 bg-gradient-to-br from-secondary to-background">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-foreground flex items-center gap-2">
-              <FileText className="w-5 h-5" />
-              Vista Previa
-            </h3>
-            <span className="text-sm text-muted-foreground">
-              {currentSlides} slides
-            </span>
-          </div>
-          
-          <div className="aspect-video bg-card rounded-lg shadow-inner flex items-center justify-center border-2 border-dashed border-border">
-            <div className="text-center">
-              <FileText className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
-              <p className="text-muted-foreground">
-                Aquí se mostrará la vista previa de tu presentación
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        <div className="space-y-4">
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="grid md:grid-cols-2 gap-4">
           <Card 
             className="p-6 cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 border-2 hover:border-primary group"
             onClick={onAddProduct}
           >
-            <div className="flex flex-col items-center text-center gap-3">
-              <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary transition-colors">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary transition-colors flex-shrink-0">
                 <Plus className="w-7 h-7 text-primary group-hover:text-primary-foreground transition-colors" />
               </div>
               <div>
                 <h3 className="font-semibold text-foreground mb-1">Adicionar Producto</h3>
                 <p className="text-sm text-muted-foreground">
-                  Agrega slides de productos adicionales
+                  Agrega slides de productos adicionales del catálogo
                 </p>
               </div>
             </div>
@@ -66,26 +67,20 @@ export const Step4Review = ({ onAddProduct, onAddSlide }: Step4ReviewProps) => {
             className="p-6 cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 border-2 hover:border-primary group"
             onClick={onAddSlide}
           >
-            <div className="flex flex-col items-center text-center gap-3">
-              <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary transition-colors">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center group-hover:bg-primary transition-colors flex-shrink-0">
                 <Image className="w-7 h-7 text-primary group-hover:text-primary-foreground transition-colors" />
               </div>
               <div>
                 <h3 className="font-semibold text-foreground mb-1">Adicionar Slide</h3>
                 <p className="text-sm text-muted-foreground">
-                  Sube imágenes personalizadas
+                  Sube imágenes personalizadas a tu presentación
                 </p>
               </div>
             </div>
           </Card>
         </div>
       </div>
-
-      <Card className="p-4 bg-muted/50">
-        <p className="text-sm text-center text-muted-foreground">
-          Una vez estés satisfecho con la presentación, continúa al siguiente paso para consolidar.
-        </p>
-      </Card>
     </div>
   );
 };

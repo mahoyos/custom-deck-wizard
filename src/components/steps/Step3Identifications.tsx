@@ -2,16 +2,25 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Plus, X, User } from "lucide-react";
+import { Plus, X, User, CheckCircle2, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { PresentationViewer } from "@/components/PresentationViewer";
+import { toast } from "sonner";
 
 interface Step3IdentificationsProps {
   onIdentificationsChange?: (identifications: string[]) => void;
+  onConfirmGeneration?: (confirmed: boolean) => void;
 }
 
-export const Step3Identifications = ({ onIdentificationsChange }: Step3IdentificationsProps) => {
+export const Step3Identifications = ({ 
+  onIdentificationsChange,
+  onConfirmGeneration 
+}: Step3IdentificationsProps) => {
   const [identifications, setIdentifications] = useState<string[]>([]);
   const [currentId, setCurrentId] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isGenerated, setIsGenerated] = useState(false);
+  const [selectedSlides, setSelectedSlides] = useState<number[]>([]);
 
   const addIdentification = () => {
     if (currentId.trim() && !identifications.includes(currentId.trim())) {
@@ -33,6 +42,73 @@ export const Step3Identifications = ({ onIdentificationsChange }: Step3Identific
       addIdentification();
     }
   };
+
+  const handleConfirmIdentifications = async () => {
+    if (identifications.length === 0) {
+      toast.error("Agrega al menos una identificación antes de confirmar");
+      return;
+    }
+
+    setIsGenerating(true);
+    
+    // Simulate loading
+    await new Promise(resolve => setTimeout(resolve, 2500));
+    
+    setIsGenerating(false);
+    setIsGenerated(true);
+    onConfirmGeneration?.(true);
+    toast.success("Reporte de desempeño generado exitosamente");
+  };
+
+  const toggleSlide = (id: number) => {
+    setSelectedSlides(prev => 
+      prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
+    );
+  };
+
+  // Mock performance report slides
+  const performanceSlides = [
+    { id: 1, title: "Resumen Ejecutivo", description: "Resumen general del desempeño" },
+    { id: 2, title: "Métricas de Rendimiento", description: "KPIs principales del periodo" },
+    { id: 3, title: "Análisis de Mercado", description: "Posicionamiento y tendencias" },
+    { id: 4, title: "Oportunidades", description: "Áreas de mejora identificadas" },
+    { id: 5, title: "Proyecciones", description: "Estimaciones para próximo periodo" },
+  ];
+
+  // Show loading state
+  if (isGenerating) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-8 animate-in fade-in duration-500">
+        <Card className="p-12">
+          <div className="flex flex-col items-center justify-center text-center space-y-6">
+            <Loader2 className="w-16 h-16 text-primary animate-spin" />
+            <div>
+              <h3 className="text-2xl font-bold text-foreground mb-2">
+                Generando Reporte de Desempeño
+              </h3>
+              <p className="text-muted-foreground">
+                Procesando {identifications.length} identificación(es)...
+              </p>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show preview after generation
+  if (isGenerated) {
+    return (
+      <PresentationViewer
+        slides={performanceSlides}
+        selectedSlides={selectedSlides}
+        onSlideToggle={toggleSlide}
+        mode="delete"
+        title="Reporte de Desempeño Generado"
+        subtitle="Revisa el reporte generado con la información de los clientes. Puedes eliminar slides si lo deseas."
+      />
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 animate-in fade-in slide-in-from-right-4 duration-500">
@@ -101,6 +177,19 @@ export const Step3Identifications = ({ onIdentificationsChange }: Step3Identific
             No hay identificaciones agregadas aún. Comienza agregando la primera.
           </p>
         </Card>
+      )}
+
+      {identifications.length > 0 && (
+        <div className="mt-6">
+          <Button 
+            size="lg" 
+            className="w-full gap-2"
+            onClick={handleConfirmIdentifications}
+          >
+            <CheckCircle2 className="w-5 h-5" />
+            Confirmar Identificaciones y Generar Reporte
+          </Button>
+        </div>
       )}
     </div>
   );
