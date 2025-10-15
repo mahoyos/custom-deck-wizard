@@ -1,24 +1,26 @@
 import { Card } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, ChevronDown, Folder, FileText, Eye, Plus } from "lucide-react";
+import { ChevronRight, ChevronDown, Folder, FileText } from "lucide-react";
 import { useState } from "react";
-import slidePreview from "@/assets/slide-preview.jpg";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
 import { PresentationViewer } from "@/components/PresentationViewer";
 import { toast as sonnerToast } from "sonner";
+
+interface Slide {
+  id: number;
+  title: string;
+  description: string;
+}
+
+interface PresentationFile {
+  id: string;
+  name: string;
+  slides: Slide[];
+}
 
 interface ProductCategory {
   id: string;
   name: string;
-  slides?: { id: number; title: string }[];
+  files?: PresentationFile[];
   subcategories?: ProductCategory[];
 }
 
@@ -30,41 +32,113 @@ const mockCategories: ProductCategory[] = [
       {
         id: "savings",
         name: "Cuentas de Ahorro",
-        slides: [
-          { id: 1, title: "Cuenta de Ahorro Básica" },
-          { id: 2, title: "Cuenta de Ahorro Premium" },
-          { id: 3, title: "Cuenta de Ahorro Infantil" },
+        files: [
+          {
+            id: "savings-basic",
+            name: "Cuenta de Ahorro Básica.pptx",
+            slides: [
+              { id: 1, title: "Cuenta de Ahorro Básica - Intro", description: "Presentación de la cuenta básica" },
+              { id: 2, title: "Beneficios Cuenta Básica", description: "Principales beneficios y características" },
+              { id: 3, title: "Requisitos y Tarifas", description: "Información sobre requisitos y costos" },
+            ]
+          },
+          {
+            id: "savings-premium",
+            name: "Cuenta de Ahorro Premium.pptx",
+            slides: [
+              { id: 4, title: "Cuenta Premium - Introducción", description: "Cuenta con beneficios exclusivos" },
+              { id: 5, title: "Ventajas Premium", description: "Tasas preferenciales y servicios" },
+            ]
+          },
         ],
       },
       {
         id: "credit",
         name: "Tarjetas de Crédito",
-        slides: [
-          { id: 4, title: "Tarjeta Clásica" },
-          { id: 5, title: "Tarjeta Gold" },
-          { id: 6, title: "Tarjeta Platinum" },
+        files: [
+          {
+            id: "credit-classic",
+            name: "Tarjeta Clásica.pptx",
+            slides: [
+              { id: 6, title: "Tarjeta Clásica", description: "Presentación de tarjeta clásica" },
+              { id: 7, title: "Beneficios Tarjeta Clásica", description: "Puntos y beneficios incluidos" },
+            ]
+          },
+          {
+            id: "credit-gold",
+            name: "Tarjeta Gold.pptx",
+            slides: [
+              { id: 8, title: "Tarjeta Gold", description: "Tarjeta con beneficios superiores" },
+              { id: 9, title: "Programa de Recompensas", description: "Puntos dobles y beneficios exclusivos" },
+              { id: 10, title: "Seguros Incluidos", description: "Coberturas de viaje y compras" },
+            ]
+          },
         ],
       },
     ],
   },
   {
-    id: "insurance",
-    name: "Seguros",
+    id: "investment-funds",
+    name: "Fondos de inversión colectiva",
     subcategories: [
       {
-        id: "life",
-        name: "Seguros de Vida",
-        slides: [
-          { id: 7, title: "Seguro de Vida Básico" },
-          { id: 8, title: "Seguro de Vida Familiar" },
+        id: "conservative",
+        name: "Fondos Conservadores",
+        files: [
+          {
+            id: "conservative-basic",
+            name: "Fondo Conservador Básico.pptx",
+            slides: [
+              { id: 11, title: "Fondo Conservador - Introducción", description: "Inversión de bajo riesgo" },
+              { id: 12, title: "Rentabilidad Histórica", description: "Rendimientos y proyecciones" },
+              { id: 13, title: "Perfil del Inversionista", description: "¿Para quién es este fondo?" },
+            ]
+          },
         ],
       },
       {
-        id: "health",
-        name: "Seguros de Salud",
-        slides: [
-          { id: 9, title: "Plan Básico de Salud" },
-          { id: 10, title: "Plan Premium de Salud" },
+        id: "moderate",
+        name: "Fondos Moderados",
+        files: [
+          {
+            id: "moderate-balanced",
+            name: "Fondo Balanceado.pptx",
+            slides: [
+              { id: 14, title: "Fondo Balanceado", description: "Balance entre riesgo y rentabilidad" },
+              { id: 15, title: "Composición del Portafolio", description: "Distribución de activos" },
+            ]
+          },
+        ],
+        subcategories: [
+          {
+            id: "moderate-growth",
+            name: "Crecimiento Moderado",
+            files: [
+              {
+                id: "moderate-growth-file",
+                name: "Fondo Crecimiento Moderado.pptx",
+                slides: [
+                  { id: 16, title: "Fondo de Crecimiento", description: "Mayor potencial de rentabilidad" },
+                  { id: 17, title: "Estrategia de Inversión", description: "Enfoque en acciones y bonos" },
+                ]
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: "aggressive",
+        name: "Fondos Agresivos",
+        files: [
+          {
+            id: "aggressive-equity",
+            name: "Fondo de Acciones.pptx",
+            slides: [
+              { id: 18, title: "Fondo de Acciones", description: "Alto potencial de crecimiento" },
+              { id: 19, title: "Riesgos y Oportunidades", description: "Volatilidad y rendimientos esperados" },
+              { id: 20, title: "Horizonte de Inversión", description: "Inversión a largo plazo" },
+            ]
+          },
         ],
       },
     ],
@@ -75,28 +149,12 @@ export const Step5AddProduct = () => {
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   const [selectedSlides, setSelectedSlides] = useState<number[]>([]);
   const [selectedSlidesForPreview, setSelectedSlidesForPreview] = useState<number[]>([]);
-  const [previewSlide, setPreviewSlide] = useState<{ id: number; title: string } | null>(null);
-  const [previewMode, setPreviewMode] = useState(false);
-  const { toast } = useToast();
+  const [selectedFile, setSelectedFile] = useState<PresentationFile | null>(null);
 
   const toggleCategory = (id: string) => {
     setExpandedCategories(prev =>
       prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
     );
-  };
-
-  const toggleSlide = (id: number) => {
-    setSelectedSlides(prev =>
-      prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
-    );
-  };
-
-  const addSlideFromPreview = (id: number, title: string) => {
-    if (!selectedSlides.includes(id)) {
-      setSelectedSlides(prev => [...prev, id]);
-      sonnerToast.success(`"${title}" agregado a la presentación`);
-    }
-    setPreviewSlide(null);
   };
 
   const toggleSlideInPreview = (id: number) => {
@@ -105,25 +163,45 @@ export const Step5AddProduct = () => {
     );
   };
 
-  const getAllSlidesFromCategory = (category: ProductCategory): { id: number; title: string }[] => {
-    const slides = category.slides || [];
-    const subSlides = category.subcategories?.flatMap(sub => getAllSlidesFromCategory(sub)) || [];
-    return [...slides, ...subSlides];
+  const handleFileClick = (file: PresentationFile) => {
+    setSelectedFile(file);
+    // Initialize with already selected slides from this file
+    const fileSlideIds = file.slides.map(s => s.id);
+    const alreadySelected = fileSlideIds.filter(id => selectedSlides.includes(id));
+    setSelectedSlidesForPreview(alreadySelected);
+  };
+
+  const confirmSelection = () => {
+    // Add the selected slides from preview to the main selection
+    setSelectedSlides(prev => {
+      const newSlides = [...prev];
+      selectedSlidesForPreview.forEach(id => {
+        if (!newSlides.includes(id)) {
+          newSlides.push(id);
+        }
+      });
+      // Remove slides that were deselected
+      return newSlides.filter(id => 
+        !selectedFile?.slides.some(s => s.id === id) || selectedSlidesForPreview.includes(id)
+      );
+    });
+    sonnerToast.success(`${selectedSlidesForPreview.length} slide(s) agregado(s)`);
+    setSelectedFile(null);
   };
 
   const renderCategory = (category: ProductCategory, level: number = 0) => {
     const isExpanded = expandedCategories.includes(category.id);
-    const hasSubcategories = category.subcategories && category.subcategories.length > 0;
+    const hasSubcategoriesOrFiles = (category.subcategories && category.subcategories.length > 0) || (category.files && category.files.length > 0);
 
     return (
       <div key={category.id} className="animate-in fade-in slide-in-from-left-2 duration-300">
         <div
-          className={`flex items-center gap-2 p-3 rounded-lg cursor-pointer transition-colors hover:bg-slide-hover ${
+          className={`flex items-center gap-2 p-3 rounded-lg cursor-pointer transition-colors hover:bg-secondary ${
             level > 0 ? 'ml-6' : ''
           }`}
-          onClick={() => hasSubcategories && toggleCategory(category.id)}
+          onClick={() => hasSubcategoriesOrFiles && toggleCategory(category.id)}
         >
-          {hasSubcategories && (
+          {hasSubcategoriesOrFiles && (
             isExpanded ? (
               <ChevronDown className="w-4 h-4 text-muted-foreground" />
             ) : (
@@ -134,70 +212,60 @@ export const Step5AddProduct = () => {
           <span className="font-medium text-foreground">{category.name}</span>
         </div>
 
-        {isExpanded && category.subcategories && (
-          <div className="mt-2">
-            {category.subcategories.map(sub => renderCategory(sub, level + 1))}
-          </div>
-        )}
-
-        {isExpanded && category.slides && (
+        {isExpanded && (
           <div className="mt-2 ml-6 space-y-2">
-            {category.slides.map(slide => (
-              <Card
-                key={slide.id}
-                className={`p-3 transition-all border-2 ${
-                  selectedSlides.includes(slide.id)
-                    ? 'border-primary bg-primary/5'
-                    : 'border-slide-border hover:border-primary/50'
-                }`}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 flex-1">
-                    <Checkbox
-                      checked={selectedSlides.includes(slide.id)}
-                      onCheckedChange={() => toggleSlide(slide.id)}
-                      className="cursor-pointer"
-                    />
+            {/* Render subcategories */}
+            {category.subcategories && category.subcategories.map(sub => renderCategory(sub, level + 1))}
+            
+            {/* Render files */}
+            {category.files && category.files.map(file => {
+              const fileSlideIds = file.slides.map(s => s.id);
+              const hasSelectedSlides = fileSlideIds.some(id => selectedSlides.includes(id));
+              
+              return (
+                <Card
+                  key={file.id}
+                  className={`p-3 transition-all border-2 cursor-pointer ${
+                    hasSelectedSlides
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border hover:border-primary/50'
+                  }`}
+                  onClick={() => handleFileClick(file)}
+                >
+                  <div className="flex items-center gap-3">
                     <FileText className="w-4 h-4 text-primary" />
-                    <span className="text-sm">{slide.title}</span>
+                    <span className="text-sm font-medium">{file.name}</span>
+                    <span className="text-xs text-muted-foreground ml-auto">
+                      {file.slides.length} slide(s)
+                    </span>
                   </div>
-                  <button
-                    onClick={() => setPreviewSlide(slide)}
-                    className="p-1 hover:bg-primary/10 rounded transition-colors"
-                  >
-                    <Eye className="w-4 h-4 text-primary" />
-                  </button>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>
     );
   };
 
-  // Preview mode - show selected slides in PresentationViewer
-  if (previewMode && selectedSlides.length > 0) {
-    const selectedSlideDetails = mockCategories.flatMap(cat => 
-      getAllSlidesFromCategory(cat).filter(s => selectedSlides.includes(s.id))
-    ).map(slide => ({
-      ...slide,
-      description: `Slide de producto: ${slide.title}`
-    }));
-
+  // Show file preview when a file is selected
+  if (selectedFile) {
     return (
       <div className="space-y-6">
         <PresentationViewer
-          slides={selectedSlideDetails}
+          slides={selectedFile.slides}
           selectedSlides={selectedSlidesForPreview}
           onSlideToggle={toggleSlideInPreview}
           mode="add"
-          title="Vista Previa - Productos Seleccionados"
-          subtitle="Navega por los productos que has seleccionado. Puedes desmarcar los que no deseas agregar."
+          title={`Vista Previa - ${selectedFile.name}`}
+          subtitle="Navega por la presentación y selecciona los slides que deseas agregar."
         />
-        <div className="max-w-6xl mx-auto px-4">
-          <Button variant="outline" onClick={() => setPreviewMode(false)}>
+        <div className="max-w-6xl mx-auto px-4 flex gap-3">
+          <Button variant="outline" onClick={() => setSelectedFile(null)}>
             Volver al Catálogo
+          </Button>
+          <Button onClick={confirmSelection}>
+            Confirmar Selección ({selectedSlidesForPreview.length} slides)
           </Button>
         </div>
       </div>
@@ -238,16 +306,6 @@ export const Step5AddProduct = () => {
                   slide(s) seleccionado(s)
                 </p>
               </div>
-              <Button 
-                className="w-full" 
-                onClick={() => {
-                  setSelectedSlidesForPreview([...selectedSlides]);
-                  setPreviewMode(true);
-                }}
-              >
-                <Eye className="w-4 h-4 mr-2" />
-                Previsualizar Selección
-              </Button>
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
@@ -258,29 +316,6 @@ export const Step5AddProduct = () => {
         </Card>
       </div>
 
-      <Dialog open={!!previewSlide} onOpenChange={() => setPreviewSlide(null)}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>{previewSlide?.title}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <img 
-              src={slidePreview} 
-              alt={previewSlide?.title} 
-              className="w-full rounded-lg border-2 border-border"
-            />
-          </div>
-          <DialogFooter>
-            <Button
-              onClick={() => previewSlide && addSlideFromPreview(previewSlide.id, previewSlide.title)}
-              className="gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              Añadir este slide
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
