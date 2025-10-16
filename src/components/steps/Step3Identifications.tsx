@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Plus, X, User, CheckCircle2, Loader2 } from "lucide-react";
 import { useState } from "react";
@@ -114,26 +115,45 @@ export const Step3Identifications = ({
     <div className="max-w-4xl mx-auto px-4 py-8 animate-in fade-in slide-in-from-right-4 duration-500">
       <div className="mb-8">
         <h2 className="text-3xl font-bold text-foreground mb-2">
-          Identificaciones de Usuario
+          Documentos de Identificación del Cliente
         </h2>
         <p className="text-muted-foreground">
-          Agrega las identificaciones de los usuarios para personalizar la presentación.
+          Ingresa los números de documento del cliente existente para consultar y generar su reporte de desempeño. Esto nos permitirá incluir información histórica en la presentación.
         </p>
       </div>
 
       <Card className="p-6 mb-6">
-        <div className="flex gap-2">
-          <Input
-            placeholder="Ingresa una identificación (ej: CC 123456789, NIT 900123456)"
-            value={currentId}
-            onChange={(e) => setCurrentId(e.target.value)}
-            onKeyPress={handleKeyPress}
-            className="flex-1"
-          />
-          <Button onClick={addIdentification} size="lg">
-            <Plus className="w-4 h-4 mr-2" />
-            Agregar
-          </Button>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="identification" className="text-base">
+              Número de Documento
+            </Label>
+            <p className="text-sm text-muted-foreground mt-1 mb-3">
+              Solo números. Si es NIT, ingrésalo sin el dígito de verificación
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Input
+              id="identification"
+              type="text"
+              placeholder="Ej: 1234567890 o 900123456"
+              value={currentId}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, '');
+                setCurrentId(value);
+              }}
+              onKeyPress={handleKeyPress}
+              className="flex-1"
+              maxLength={15}
+            />
+            <Button onClick={addIdentification} size="lg" disabled={!currentId.trim()}>
+              <Plus className="w-4 h-4 mr-2" />
+              Agregar
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Puedes agregar múltiples documentos si el cliente tiene diferentes identificaciones
+          </p>
         </div>
       </Card>
 

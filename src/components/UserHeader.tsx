@@ -1,4 +1,4 @@
-import { User, LogOut } from "lucide-react";
+import { User, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -25,7 +25,7 @@ export const UserHeader = ({
           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
             <span className="text-primary-foreground font-bold text-lg">M</span>
           </div>
-          <h1 className="text-xl font-bold text-foreground">Maker</h1>
+          <h1 className="text-xl font-bold text-foreground">SUMI Maker</h1>
         </div>
 
         <DropdownMenu>
@@ -47,9 +47,9 @@ export const UserHeader = ({
               <User className="mr-2 h-4 w-4" />
               <span>Perfil</span>
             </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive">
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Cerrar Sesión</span>
+            <DropdownMenuItem className="cursor-pointer" onClick={() => window.location.href = '/mis-presentaciones'}>
+              <FileText className="mr-2 h-4 w-4" />
+              <span>Mis Presentaciones</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

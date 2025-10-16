@@ -8,6 +8,7 @@ interface ProgressBarProps {
 
 const stepLabels = [
   "Inicio",
+  "Identificar Cliente",
   "Presentación Base",
   "Identificaciones",
   "Revisión",
@@ -15,9 +16,9 @@ const stepLabels = [
 ];
 
 export const ProgressBar = ({ currentStep, totalSteps }: ProgressBarProps) => {
-  // Map internal steps to display steps (4 and 5 show as same step)
-  const displayStep = currentStep === 5 ? 4 : currentStep > 5 ? currentStep - 1 : currentStep;
-  const displayTotalSteps = totalSteps - 1; // Show 5 steps instead of 6
+  // Map internal steps to display steps (5 and 6 show as same step)
+  const displayStep = currentStep === 6 ? 5 : currentStep > 6 ? currentStep - 1 : currentStep;
+  const displayTotalSteps = totalSteps - 1; // Show 6 steps instead of 7
   
   return (
     <div className="w-full bg-card shadow-sm py-6 px-8 border-b border-border">

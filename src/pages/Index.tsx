@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/ProgressBar";
 import { UserHeader } from "@/components/UserHeader";
 import { Step1Welcome } from "@/components/steps/Step1Welcome";
+import { Step2ClientName } from "@/components/steps/Step2ClientName";
 import { Step2BasePresentation } from "@/components/steps/Step2BasePresentation";
 import { Step3Identifications } from "@/components/steps/Step3Identifications";
 import { Step4Review } from "@/components/steps/Step4Review";
@@ -18,12 +19,13 @@ type Step5Mode = "review" | "addProduct" | "addSlide";
 const Index = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [clientType, setClientType] = useState<ClientType>(null);
+  const [clientName, setClientName] = useState("");
   const [step5Mode, setStep5Mode] = useState<Step5Mode>("review");
   const [identifications, setIdentifications] = useState<string[]>([]);
   const [reportGenerated, setReportGenerated] = useState(false);
   const { toast } = useToast();
 
-  const totalSteps = 5;
+  const totalSteps = 6;
 
   const handleClientTypeSelection = (type: "new" | "existing") => {
     setClientType(type);
@@ -31,8 +33,20 @@ const Index = () => {
   };
 
   const handleNext = () => {
-    // Validate identifications for existing clients in step 3
-    if (currentStep === 3 && clientType === "existing") {
+    // Validate client name in step 2
+    if (currentStep === 2) {
+      if (!clientName.trim()) {
+        toast({
+          title: "Nombre requerido",
+          description: "Debes ingresar el nombre del cliente para continuar.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    // Validate identifications for existing clients in step 4
+    if (currentStep === 4 && clientType === "existing") {
       if (identifications.length === 0) {
         toast({
           title: "Documentos requeridos",
@@ -51,10 +65,10 @@ const Index = () => {
       }
     }
 
-    // Skip step 3 if client is new
-    if (currentStep === 2 && clientType === "new") {
-      setCurrentStep(4);
-    } else if (currentStep === 4 && step5Mode !== "review") {
+    // Skip step 4 (identifications) if client is new
+    if (currentStep === 3 && clientType === "new") {
+      setCurrentStep(5);
+    } else if (currentStep === 5 && step5Mode !== "review") {
       // After adding products or slides, go back to review mode
       setStep5Mode("review");
     } else if (currentStep < totalSteps) {
@@ -63,15 +77,15 @@ const Index = () => {
   };
 
   const handlePrevious = () => {
-    // If in add modes in step 4, go back to review mode
-    if (currentStep === 4 && step5Mode !== "review") {
+    // If in add modes in step 5, go back to review mode
+    if (currentStep === 5 && step5Mode !== "review") {
       setStep5Mode("review");
       return;
     }
 
-    // Skip step 3 if going back and client is new
-    if (currentStep === 4 && clientType === "new") {
-      setCurrentStep(2);
+    // Skip step 4 (identifications) if going back and client is new
+    if (currentStep === 5 && clientType === "new") {
+      setCurrentStep(3);
     } else if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
@@ -95,8 +109,10 @@ const Index = () => {
     setTimeout(() => {
       setCurrentStep(1);
       setClientType(null);
+      setClientName("");
       setStep5Mode("review");
       setIdentifications([]);
+      setReportGenerated(false);
     }, 2000);
   };
 
@@ -105,22 +121,30 @@ const Index = () => {
       case 1:
         return <Step1Welcome onSelectClientType={handleClientTypeSelection} />;
       case 2:
-        return <Step2BasePresentation clientType={clientType!} />;
+        return (
+          <Step2ClientName 
+            clientType={clientType!} 
+            clientName={clientName}
+            onClientNameChange={setClientName}
+          />
+        );
       case 3:
+        return <Step2BasePresentation clientType={clientType!} />;
+      case 4:
         return (
           <Step3Identifications 
             onIdentificationsChange={setIdentifications} 
             onConfirmGeneration={setReportGenerated}
           />
         );
-      case 4:
+      case 5:
         if (step5Mode === "addProduct") {
           return <Step5AddProduct />;
         } else if (step5Mode === "addSlide") {
           return <Step5AddSlide />;
         }
         return <Step4Review onAddProduct={handleAddProduct} onAddSlide={handleAddSlide} />;
-      case 5:
+      case 6:
         return <Step6Consolidate onConsolidate={handleConsolidate} />;
       default:
         return null;

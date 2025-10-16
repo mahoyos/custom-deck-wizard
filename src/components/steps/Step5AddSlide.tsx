@@ -42,7 +42,7 @@ export const Step5AddSlide = () => {
           Adicionar Slides Personalizados
         </h2>
         <p className="text-muted-foreground">
-          Sube imágenes que se integrarán como slides en tu presentación final.
+          Carga tus propias imágenes para incluir slides completamente personalizados. Estos slides se integrarán en tu presentación final junto con el contenido seleccionado.
         </p>
       </div>
 
@@ -63,7 +63,7 @@ export const Step5AddSlide = () => {
                 Arrastra archivos aquí o haz clic para seleccionar
               </h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Formatos soportados: JPG, PNG, GIF, SVG
+                Sube imágenes de alta calidad en formato JPG, PNG, GIF o SVG. Cada imagen se convertirá en un slide individual.
               </p>
               <Button size="lg">
                 Seleccionar Archivos
