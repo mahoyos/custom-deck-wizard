@@ -13,18 +13,18 @@ interface Slide {
 
 interface PresentationViewerProps {
   slides: Slide[];
-  selectedSlides: number[];
-  onSlideToggle: (id: number) => void;
-  mode: "delete" | "add"; // delete = marcar para eliminar, add = marcar para agregar
+  selectedSlides?: number[];
+  onSlideToggle?: (id: number) => void;
+  mode?: "delete" | "add" | "view"; // delete = marcar para eliminar, add = marcar para agregar, view = solo visualizar
   title: string;
   subtitle: string;
 }
 
 export const PresentationViewer = ({
   slides,
-  selectedSlides,
+  selectedSlides = [],
   onSlideToggle,
-  mode,
+  mode = "view",
   title,
   subtitle,
 }: PresentationViewerProps) => {
@@ -71,30 +71,32 @@ export const PresentationViewer = ({
               </h3>
               <p className="text-muted-foreground">{currentSlide.description}</p>
             </div>
-            <div className="flex items-center gap-3 ml-4">
-              <label 
-                className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg border-2 transition-all ${
-                  isCurrentSelected 
-                    ? mode === "delete" 
-                      ? 'bg-destructive/10 border-destructive' 
-                      : 'bg-primary/10 border-primary'
-                    : 'border-border hover:border-primary/50'
-                }`}
-              >
-                <Checkbox
-                  checked={isCurrentSelected}
-                  onCheckedChange={() => onSlideToggle(currentSlide.id)}
-                  className={
-                    mode === "delete" 
-                      ? "data-[state=checked]:bg-destructive data-[state=checked]:border-destructive"
-                      : "data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                  }
-                />
-                <span className="font-medium text-sm">
-                  {mode === "delete" ? "Eliminar" : "Agregar"}
-                </span>
-              </label>
-            </div>
+            {mode !== "view" && (
+              <div className="flex items-center gap-3 ml-4">
+                <label 
+                  className={`flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg border-2 transition-all ${
+                    isCurrentSelected 
+                      ? mode === "delete" 
+                        ? 'bg-destructive/10 border-destructive' 
+                        : 'bg-primary/10 border-primary'
+                      : 'border-border hover:border-primary/50'
+                  }`}
+                >
+                  <Checkbox
+                    checked={isCurrentSelected}
+                    onCheckedChange={() => onSlideToggle?.(currentSlide.id)}
+                    className={
+                      mode === "delete" 
+                        ? "data-[state=checked]:bg-destructive data-[state=checked]:border-destructive"
+                        : "data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                    }
+                  />
+                  <span className="font-medium text-sm">
+                    {mode === "delete" ? "Eliminar" : "Agregar"}
+                  </span>
+                </label>
+              </div>
+            )}
           </div>
         </div>
 
