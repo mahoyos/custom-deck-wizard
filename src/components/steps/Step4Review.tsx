@@ -32,23 +32,31 @@ export const Step4Review = ({
   onDeleteSlides,
   deletedSlides
 }: Step4ReviewProps) => {
-  const toggleSlide = (id: number) => {
+  const toggleSlideForDeletion = (id: number) => {
     const newDeletedSlides = deletedSlides.includes(id) 
       ? deletedSlides.filter(s => s !== id) 
       : [...deletedSlides, id];
     onDeleteSlides(newDeletedSlides);
   };
 
+  const handleSlidesReorder = (newSlides: Slide[]) => {
+    onSlidesReorder(newSlides);
+  };
+
+  // Filter out already deleted slides
+  const activeSlides = slides.filter(slide => !deletedSlides.includes(slide.id));
+
   return (
     <div className="space-y-6">
       <PresentationViewer
-        slides={slides}
+        slides={activeSlides}
         selectedSlides={deletedSlides}
-        onSlideToggle={toggleSlide}
-        onSlidesReorder={onSlidesReorder}
+        onSlideToggle={toggleSlideForDeletion}
+        onSlidesReorder={handleSlidesReorder}
         mode="delete"
-        title="Revisa y Personaliza tu Presentación"
-        subtitle="Navega por la presentación generada, elimina los slides que no necesites, reorganiza arrastrando las miniaturas o agrega contenido adicional de productos específicos y slides personalizados."
+        title="Vista Previa de Presentación"
+        subtitle="Navega por la presentación, reordena los slides arrastrándolos, y selecciona los que deseas eliminar."
+        enableDragAndDrop={true}
       />
 
       <div className="max-w-6xl mx-auto px-4">

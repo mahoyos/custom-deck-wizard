@@ -4,12 +4,19 @@ import { Upload, Image as ImageIcon, X } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
+interface Slide {
+  id: number;
+  title: string;
+  description: string;
+}
+
 interface Step5AddSlideProps {
-  onSlidesAdded?: (count: number) => void;
+  onSlidesAdded?: (slides: Slide[]) => void;
 }
 
 export const Step5AddSlide = ({ onSlidesAdded }: Step5AddSlideProps) => {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [nextSlideId, setNextSlideId] = useState(1000); // Start custom slides at 1000 to avoid conflicts
   const { toast } = useToast();
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -21,7 +28,17 @@ export const Step5AddSlide = ({ onSlidesAdded }: Step5AddSlideProps) => {
       
       if (imageFiles.length > 0) {
         setUploadedFiles(prev => [...prev, ...imageFiles]);
-        onSlidesAdded?.(imageFiles.length);
+        
+        // Create slide objects for the new files
+        const newSlides: Slide[] = imageFiles.map((file, index) => ({
+          id: nextSlideId + index,
+          title: file.name.replace(/\.[^/.]+$/, ""), // Remove file extension
+          description: "Slide personalizado"
+        }));
+        
+        setNextSlideId(prev => prev + imageFiles.length);
+        onSlidesAdded?.(newSlides);
+        
         toast({
           title: "Archivos cargados",
           description: `Se cargaron ${imageFiles.length} imagen(es) correctamente.`,
@@ -37,8 +54,16 @@ export const Step5AddSlide = ({ onSlidesAdded }: Step5AddSlideProps) => {
   };
 
   const removeFile = (index: number) => {
+    const removedFile = uploadedFiles[index];
     setUploadedFiles(prev => prev.filter((_, i) => i !== index));
-    onSlidesAdded?.(-1);
+    
+    // Remove the corresponding slide
+    const slideToRemove: Slide = {
+      id: 1000 + index, // This is a simplified approach
+      title: removedFile.name.replace(/\.[^/.]+$/, ""),
+      description: "Slide personalizado"
+    };
+    onSlidesAdded?.([slideToRemove].map(s => ({ ...s, id: -s.id }))); // Negative ID to indicate removal
   };
 
   return (

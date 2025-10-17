@@ -146,7 +146,7 @@ const mockCategories: ProductCategory[] = [
 ];
 
 interface Step5AddProductProps {
-  onSlidesAdded?: (count: number) => void;
+  onSlidesAdded?: (slides: Slide[]) => void;
 }
 
 export const Step5AddProduct = ({ onSlidesAdded }: Step5AddProductProps) => {
@@ -183,11 +183,14 @@ export const Step5AddProduct = ({ onSlidesAdded }: Step5AddProductProps) => {
   };
 
   const confirmSelection = () => {
-    // Count only newly added slides
+    if (!selectedFile) return;
+    
+    // Get the newly added slides (not previously selected)
     const previouslySelected = selectedSlides.filter(id => 
-      selectedFile?.slides.some(s => s.id === id)
-    ).length;
-    const newlyAddedCount = selectedSlidesForPreview.length - previouslySelected;
+      selectedFile.slides.some(s => s.id === id)
+    );
+    const newlyAddedIds = selectedSlidesForPreview.filter(id => !previouslySelected.includes(id));
+    const newlyAddedSlides = selectedFile.slides.filter(s => newlyAddedIds.includes(s.id));
     
     // Add the selected slides from preview to the main selection
     setSelectedSlides(prev => {
@@ -199,12 +202,12 @@ export const Step5AddProduct = ({ onSlidesAdded }: Step5AddProductProps) => {
       });
       // Remove slides that were deselected
       return newSlides.filter(id => 
-        !selectedFile?.slides.some(s => s.id === id) || selectedSlidesForPreview.includes(id)
+        !selectedFile.slides.some(s => s.id === id) || selectedSlidesForPreview.includes(id)
       );
     });
     
-    if (newlyAddedCount > 0) {
-      onSlidesAdded?.(newlyAddedCount);
+    if (newlyAddedSlides.length > 0) {
+      onSlidesAdded?.(newlyAddedSlides);
     }
     
     sonnerToast.success(`${selectedSlidesForPreview.length} slide(s) agregado(s)`);

@@ -3,22 +3,27 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Plus, X, User, CheckCircle2, Loader2 } from "lucide-react";
+import { Plus, X, User, CheckCircle2, Loader2, Mail } from "lucide-react";
 import { useState } from "react";
 import { PresentationViewer } from "@/components/PresentationViewer";
 import { toast } from "sonner";
 
+type UserType = "RM" | "DB";
+
 interface Step3IdentificationsProps {
+  userType: UserType;
   onIdentificationsChange?: (identifications: string[]) => void;
   onConfirmGeneration?: (confirmed: boolean) => void;
 }
 
 export const Step3Identifications = ({ 
+  userType,
   onIdentificationsChange,
   onConfirmGeneration 
 }: Step3IdentificationsProps) => {
   const [identifications, setIdentifications] = useState<string[]>([]);
   const [currentId, setCurrentId] = useState("");
+  const [rmEmail, setRmEmail] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGenerated, setIsGenerated] = useState(false);
   const [selectedSlides, setSelectedSlides] = useState<number[]>([]);
@@ -158,7 +163,7 @@ export const Step3Identifications = ({
       </Card>
 
       {identifications.length > 0 && (
-        <Card className="p-6">
+        <Card className="p-6 mb-6">
           <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
             <User className="w-5 h-5" />
             Identificaciones Agregadas ({identifications.length})
@@ -190,6 +195,28 @@ export const Step3Identifications = ({
         </Card>
       )}
 
+      {userType === "DB" && identifications.length > 0 && (
+        <Card className="p-6 mb-6">
+          <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+            <Mail className="w-5 h-5 text-primary" />
+            Correo del RM Asignado
+          </h3>
+          <div className="space-y-2">
+            <Label htmlFor="rm-email">Correo electrónico del RM</Label>
+            <Input
+              id="rm-email"
+              type="email"
+              placeholder="rm@ejemplo.com"
+              value={rmEmail}
+              onChange={(e) => setRmEmail(e.target.value)}
+            />
+            <p className="text-sm text-muted-foreground">
+              Ingresa el correo del RM que gestionará esta presentación.
+            </p>
+          </div>
+        </Card>
+      )}
+
       {identifications.length === 0 && (
         <Card className="p-12 text-center border-dashed">
           <User className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
@@ -205,6 +232,7 @@ export const Step3Identifications = ({
             size="lg" 
             className="w-full gap-2"
             onClick={handleConfirmIdentifications}
+            disabled={userType === "DB" && !rmEmail.trim()}
           >
             <CheckCircle2 className="w-5 h-5" />
             Confirmar Identificaciones y Generar Reporte

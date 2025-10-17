@@ -36,6 +36,7 @@ interface PresentationViewerProps {
   mode?: "delete" | "add" | "view"; // delete = marcar para eliminar, add = marcar para agregar, view = solo visualizar
   title: string;
   subtitle: string;
+  enableDragAndDrop?: boolean; // Controla si se puede reordenar con drag and drop
 }
 
 interface SortableThumbnailProps {
@@ -107,6 +108,7 @@ export const PresentationViewer = ({
   mode = "view",
   title,
   subtitle,
+  enableDragAndDrop = false,
 }: PresentationViewerProps) => {
   const [slides, setSlides] = useState(initialSlides);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
@@ -256,35 +258,69 @@ export const PresentationViewer = ({
 
         {/* Thumbnail Navigation */}
         <div className="mt-6 pt-6 border-t border-border">
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={slides.map(s => s.id)}
-              strategy={horizontalListSortingStrategy}
+          {enableDragAndDrop ? (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
             >
-              <div className="grid grid-cols-6 gap-2">
-                {slides.map((slide, index) => {
-                  const isSelected = selectedSlides.includes(slide.id);
-                  const isCurrent = index === currentSlideIndex;
-                  
-                  return (
-                    <SortableThumbnail
-                      key={slide.id}
-                      slide={slide}
-                      index={index}
-                      isSelected={isSelected}
-                      isCurrent={isCurrent}
-                      mode={mode}
+              <SortableContext
+                items={slides.map(s => s.id)}
+                strategy={horizontalListSortingStrategy}
+              >
+                <div className="grid grid-cols-6 gap-2">
+                  {slides.map((slide, index) => {
+                    const isSelected = selectedSlides.includes(slide.id);
+                    const isCurrent = index === currentSlideIndex;
+                    
+                    return (
+                      <SortableThumbnail
+                        key={slide.id}
+                        slide={slide}
+                        index={index}
+                        isSelected={isSelected}
+                        isCurrent={isCurrent}
+                        mode={mode}
+                        onClick={() => setCurrentSlideIndex(index)}
+                      />
+                    );
+                  })}
+                </div>
+              </SortableContext>
+            </DndContext>
+          ) : (
+            <div className="grid grid-cols-6 gap-2">
+              {slides.map((slide, index) => {
+                const isSelected = selectedSlides?.includes(slide.id);
+                const isCurrent = index === currentSlideIndex;
+                
+                return (
+                  <div
+                    key={slide.id}
+                    className={`aspect-video rounded border-2 transition-all p-2 ${
+                      isCurrent 
+                        ? 'border-primary ring-2 ring-primary/20' 
+                        : isSelected
+                          ? mode === "delete"
+                            ? 'border-destructive bg-destructive/10'
+                            : 'border-primary bg-primary/10'
+                          : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <button
                       onClick={() => setCurrentSlideIndex(index)}
-                    />
-                  );
-                })}
-              </div>
-            </SortableContext>
-          </DndContext>
+                      className="w-full h-full flex flex-col items-center justify-center bg-secondary rounded"
+                    >
+                      <FileText className={`w-6 h-6 mb-1 ${
+                        isCurrent ? 'text-primary' : 'text-muted-foreground'
+                      }`} />
+                      <span className="text-xs font-medium">{index + 1}</span>
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </Card>
     </div>

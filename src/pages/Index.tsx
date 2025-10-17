@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 
 type ClientType = "new" | "existing" | null;
 type Step5Mode = "review" | "addProduct" | "addSlide";
+type UserType = "RM" | "DB";
 
 interface Slide {
   id: number;
@@ -24,6 +25,7 @@ interface Slide {
 
 const Index = () => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [userType, setUserType] = useState<UserType>("RM");
   const [clientType, setClientType] = useState<ClientType>(null);
   const [clientName, setClientName] = useState("");
   const [step5Mode, setStep5Mode] = useState<Step5Mode>("review");
@@ -37,8 +39,8 @@ const Index = () => {
     { id: 5, title: "Contacto", description: "Información de contacto" },
   ]);
   const [deletedSlides, setDeletedSlides] = useState<number[]>([]);
-  const [addedProductSlides, setAddedProductSlides] = useState<number>(0);
-  const [addedCustomSlides, setAddedCustomSlides] = useState<number>(0);
+  const [addedProductSlides, setAddedProductSlides] = useState<Slide[]>([]);
+  const [addedCustomSlides, setAddedCustomSlides] = useState<Slide[]>([]);
   const { toast } = useToast();
 
   const totalSteps = 6;
@@ -115,12 +117,14 @@ const Index = () => {
     setStep5Mode("addSlide");
   };
 
-  const handleProductSlidesAdded = (count: number) => {
-    setAddedProductSlides(prev => prev + count);
+  const handleProductSlidesAdded = (slides: Slide[]) => {
+    setAddedProductSlides(prev => [...prev, ...slides]);
+    setPresentationSlides(prev => [...prev, ...slides]);
   };
 
-  const handleCustomSlidesAdded = (count: number) => {
-    setAddedCustomSlides(prev => prev + count);
+  const handleCustomSlidesAdded = (slides: Slide[]) => {
+    setAddedCustomSlides(prev => [...prev, ...slides]);
+    setPresentationSlides(prev => [...prev, ...slides]);
   };
 
   const handleConsolidate = () => {
@@ -132,6 +136,7 @@ const Index = () => {
     // Reset to initial state
     setTimeout(() => {
       setCurrentStep(1);
+      setUserType("RM");
       setClientType(null);
       setClientName("");
       setStep5Mode("review");
@@ -145,8 +150,8 @@ const Index = () => {
         { id: 5, title: "Contacto", description: "Información de contacto" },
       ]);
       setDeletedSlides([]);
-      setAddedProductSlides(0);
-      setAddedCustomSlides(0);
+      setAddedProductSlides([]);
+      setAddedCustomSlides([]);
     }, 2000);
   };
 
@@ -156,12 +161,14 @@ const Index = () => {
 
   const handleDeleteSlides = (slidesToDelete: number[]) => {
     setDeletedSlides(slidesToDelete);
+    // Remove deleted slides from presentationSlides
+    setPresentationSlides(prev => prev.filter(slide => !slidesToDelete.includes(slide.id)));
   };
 
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return <Step1Welcome onSelectClientType={handleClientTypeSelection} />;
+        return <Step1Welcome onSelectClientType={handleClientTypeSelection} userType={userType} onUserTypeChange={setUserType} />;
       case 2:
         return (
           <Step2ClientName 
@@ -175,6 +182,7 @@ const Index = () => {
       case 4:
         return (
           <Step3Identifications 
+            userType={userType}
             onIdentificationsChange={setIdentifications} 
             onConfirmGeneration={setReportGenerated}
           />
@@ -196,13 +204,13 @@ const Index = () => {
           />
         );
       case 6:
-        const baseSlides = presentationSlides.length - deletedSlides.length;
+        const activeSlides = presentationSlides.filter(slide => !deletedSlides.includes(slide.id));
         return (
           <Step6Consolidate 
             onConsolidate={handleConsolidate}
-            baseSlides={baseSlides}
-            productSlides={addedProductSlides}
-            customSlides={addedCustomSlides}
+            baseSlides={activeSlides.length}
+            productSlides={addedProductSlides.length}
+            customSlides={addedCustomSlides.length}
           />
         );
       default:
