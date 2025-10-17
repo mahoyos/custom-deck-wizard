@@ -4,7 +4,11 @@ import { Upload, Image as ImageIcon, X } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
-export const Step5AddSlide = () => {
+interface Step5AddSlideProps {
+  onSlidesAdded?: (count: number) => void;
+}
+
+export const Step5AddSlide = ({ onSlidesAdded }: Step5AddSlideProps) => {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const { toast } = useToast();
 
@@ -17,6 +21,7 @@ export const Step5AddSlide = () => {
       
       if (imageFiles.length > 0) {
         setUploadedFiles(prev => [...prev, ...imageFiles]);
+        onSlidesAdded?.(imageFiles.length);
         toast({
           title: "Archivos cargados",
           description: `Se cargaron ${imageFiles.length} imagen(es) correctamente.`,
@@ -33,6 +38,7 @@ export const Step5AddSlide = () => {
 
   const removeFile = (index: number) => {
     setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+    onSlidesAdded?.(-1);
   };
 
   return (

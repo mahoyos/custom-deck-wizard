@@ -145,7 +145,11 @@ const mockCategories: ProductCategory[] = [
   },
 ];
 
-export const Step5AddProduct = () => {
+interface Step5AddProductProps {
+  onSlidesAdded?: (count: number) => void;
+}
+
+export const Step5AddProduct = ({ onSlidesAdded }: Step5AddProductProps) => {
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   const [selectedSlides, setSelectedSlides] = useState<number[]>([]);
   const [selectedSlidesForPreview, setSelectedSlidesForPreview] = useState<number[]>([]);
@@ -171,7 +175,20 @@ export const Step5AddProduct = () => {
     setSelectedSlidesForPreview(alreadySelected);
   };
 
+  const handleAddAll = () => {
+    if (!selectedFile) return;
+    const allSlideIds = selectedFile.slides.map(s => s.id);
+    setSelectedSlidesForPreview(allSlideIds);
+    sonnerToast.success(`${allSlideIds.length} slide(s) seleccionado(s)`);
+  };
+
   const confirmSelection = () => {
+    // Count only newly added slides
+    const previouslySelected = selectedSlides.filter(id => 
+      selectedFile?.slides.some(s => s.id === id)
+    ).length;
+    const newlyAddedCount = selectedSlidesForPreview.length - previouslySelected;
+    
     // Add the selected slides from preview to the main selection
     setSelectedSlides(prev => {
       const newSlides = [...prev];
@@ -185,6 +202,11 @@ export const Step5AddProduct = () => {
         !selectedFile?.slides.some(s => s.id === id) || selectedSlidesForPreview.includes(id)
       );
     });
+    
+    if (newlyAddedCount > 0) {
+      onSlidesAdded?.(newlyAddedCount);
+    }
+    
     sonnerToast.success(`${selectedSlidesForPreview.length} slide(s) agregado(s)`);
     setSelectedFile(null);
   };
@@ -264,6 +286,9 @@ export const Step5AddProduct = () => {
           <Button variant="outline" onClick={() => setSelectedFile(null)}>
             Volver al Catálogo
           </Button>
+          <Button variant="outline" onClick={handleAddAll}>
+            Seleccionar Todo
+          </Button>
           <Button onClick={confirmSelection}>
             Confirmar Selección ({selectedSlidesForPreview.length} slides)
           </Button>
@@ -294,7 +319,7 @@ export const Step5AddProduct = () => {
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card className="p-6 h-fit sticky top-4">
           <h3 className="font-semibold text-foreground mb-4">
             Slides Seleccionados
           </h3>

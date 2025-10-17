@@ -1,9 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronLeft, ChevronRight, FileText } from "lucide-react";
+import { ChevronLeft, ChevronRight, FileText, GripVertical } from "lucide-react";
 import slidePreview from "@/assets/slide-preview.jpg";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  horizontalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface Slide {
   id: number;
@@ -15,20 +32,118 @@ interface PresentationViewerProps {
   slides: Slide[];
   selectedSlides?: number[];
   onSlideToggle?: (id: number) => void;
+  onSlidesReorder?: (newSlides: Slide[]) => void;
   mode?: "delete" | "add" | "view"; // delete = marcar para eliminar, add = marcar para agregar, view = solo visualizar
   title: string;
   subtitle: string;
 }
 
+interface SortableThumbnailProps {
+  slide: Slide;
+  index: number;
+  isSelected: boolean;
+  isCurrent: boolean;
+  mode: "delete" | "add" | "view";
+  onClick: () => void;
+}
+
+const SortableThumbnail = ({ slide, index, isSelected, isCurrent, mode, onClick }: SortableThumbnailProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: slide.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`aspect-video rounded border-2 transition-all p-2 ${
+        isCurrent 
+          ? 'border-primary ring-2 ring-primary/20' 
+          : isSelected
+            ? mode === "delete"
+              ? 'border-destructive bg-destructive/10'
+              : 'border-primary bg-primary/10'
+            : 'border-border hover:border-primary/50'
+      }`}
+    >
+      <div className="relative w-full h-full">
+        <button
+          onClick={onClick}
+          className="w-full h-full flex flex-col items-center justify-center bg-secondary rounded"
+        >
+          <FileText className={`w-6 h-6 mb-1 ${
+            isCurrent ? 'text-primary' : 'text-muted-foreground'
+          }`} />
+          <span className="text-xs font-medium">{index + 1}</span>
+        </button>
+        <div
+          {...attributes}
+          {...listeners}
+          className="absolute top-0 right-0 p-1 cursor-grab active:cursor-grabbing"
+        >
+          <GripVertical className="w-4 h-4 text-muted-foreground" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const PresentationViewer = ({
-  slides,
+  slides: initialSlides,
   selectedSlides = [],
   onSlideToggle,
+  onSlidesReorder,
   mode = "view",
   title,
   subtitle,
 }: PresentationViewerProps) => {
+  const [slides, setSlides] = useState(initialSlides);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+
+  // Sync slides with prop changes
+  useEffect(() => {
+    setSlides(initialSlides);
+  }, [initialSlides]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = slides.findIndex((s) => s.id === active.id);
+      const newIndex = slides.findIndex((s) => s.id === over.id);
+      
+      const newSlides = arrayMove(slides, oldIndex, newIndex);
+      setSlides(newSlides);
+      onSlidesReorder?.(newSlides);
+      
+      // Update current slide index if the current slide was moved
+      if (oldIndex === currentSlideIndex) {
+        setCurrentSlideIndex(newIndex);
+      } else if (oldIndex < currentSlideIndex && newIndex >= currentSlideIndex) {
+        setCurrentSlideIndex(currentSlideIndex - 1);
+      } else if (oldIndex > currentSlideIndex && newIndex <= currentSlideIndex) {
+        setCurrentSlideIndex(currentSlideIndex + 1);
+      }
+    }
+  };
 
   const currentSlide = slides[currentSlideIndex];
   const isCurrentSelected = selectedSlides.includes(currentSlide.id);
@@ -141,35 +256,35 @@ export const PresentationViewer = ({
 
         {/* Thumbnail Navigation */}
         <div className="mt-6 pt-6 border-t border-border">
-          <div className="grid grid-cols-6 gap-2">
-            {slides.map((slide, index) => {
-              const isSelected = selectedSlides.includes(slide.id);
-              const isCurrent = index === currentSlideIndex;
-              
-              return (
-                <button
-                  key={slide.id}
-                  onClick={() => setCurrentSlideIndex(index)}
-                  className={`aspect-video rounded border-2 transition-all p-2 ${
-                    isCurrent 
-                      ? 'border-primary ring-2 ring-primary/20' 
-                      : isSelected
-                        ? mode === "delete"
-                          ? 'border-destructive bg-destructive/10'
-                          : 'border-primary bg-primary/10'
-                        : 'border-border hover:border-primary/50'
-                  }`}
-                >
-                  <div className="w-full h-full flex flex-col items-center justify-center bg-secondary rounded">
-                    <FileText className={`w-6 h-6 mb-1 ${
-                      isCurrent ? 'text-primary' : 'text-muted-foreground'
-                    }`} />
-                    <span className="text-xs font-medium">{index + 1}</span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={slides.map(s => s.id)}
+              strategy={horizontalListSortingStrategy}
+            >
+              <div className="grid grid-cols-6 gap-2">
+                {slides.map((slide, index) => {
+                  const isSelected = selectedSlides.includes(slide.id);
+                  const isCurrent = index === currentSlideIndex;
+                  
+                  return (
+                    <SortableThumbnail
+                      key={slide.id}
+                      slide={slide}
+                      index={index}
+                      isSelected={isSelected}
+                      isCurrent={isCurrent}
+                      mode={mode}
+                      onClick={() => setCurrentSlideIndex(index)}
+                    />
+                  );
+                })}
+              </div>
+            </SortableContext>
+          </DndContext>
         </div>
       </Card>
     </div>

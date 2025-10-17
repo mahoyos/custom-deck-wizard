@@ -4,10 +4,18 @@ import { FileText, CheckCircle, Download } from "lucide-react";
 
 interface Step6ConsolidateProps {
   onConsolidate: () => void;
+  baseSlides: number;
+  productSlides: number;
+  customSlides: number;
 }
 
-export const Step6Consolidate = ({ onConsolidate }: Step6ConsolidateProps) => {
-  const totalSlides = 12; // Mock total
+export const Step6Consolidate = ({ 
+  onConsolidate, 
+  baseSlides, 
+  productSlides, 
+  customSlides 
+}: Step6ConsolidateProps) => {
+  const totalSlides = baseSlides + productSlides + customSlides;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 animate-in fade-in slide-in-from-right-4 duration-500">
@@ -58,15 +66,15 @@ export const Step6Consolidate = ({ onConsolidate }: Step6ConsolidateProps) => {
               <div className="space-y-2 text-left bg-card/50 rounded-lg p-4">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Slides Base:</span>
-                  <span className="font-semibold">6</span>
+                  <span className="font-semibold">{baseSlides}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Productos:</span>
-                  <span className="font-semibold">4</span>
+                  <span className="font-semibold">{productSlides}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Personalizados:</span>
-                  <span className="font-semibold">2</span>
+                  <span className="font-semibold">{customSlides}</span>
                 </div>
                 <div className="border-t border-border pt-2 mt-2 flex justify-between font-semibold">
                   <span>Total:</span>
