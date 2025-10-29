@@ -10,37 +10,48 @@ import { toast } from "sonner";
 
 type UserType = "RM" | "DB";
 
+interface Slide {
+  id: number;
+  title: string;
+  description: string;
+}
+
 interface Step3IdentificationsProps {
   userType: UserType;
-  onIdentificationsChange?: (identifications: string[]) => void;
-  onConfirmGeneration?: (confirmed: boolean) => void;
+  identifications: string[];
+  onIdentificationsChange: (identifications: string[]) => void;
+  reportGenerated: boolean;
+  onConfirmGeneration: (confirmed: boolean) => void;
+  performanceSlides: Slide[];
+  selectedSlides: number[];
+  onSlideToggle: (id: number) => void;
 }
 
 export const Step3Identifications = ({ 
   userType,
+  identifications,
   onIdentificationsChange,
-  onConfirmGeneration 
+  reportGenerated,
+  onConfirmGeneration,
+  performanceSlides,
+  selectedSlides,
+  onSlideToggle
 }: Step3IdentificationsProps) => {
-  const [identifications, setIdentifications] = useState<string[]>([]);
   const [currentId, setCurrentId] = useState("");
   const [rmEmail, setRmEmail] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isGenerated, setIsGenerated] = useState(false);
-  const [selectedSlides, setSelectedSlides] = useState<number[]>([]);
 
   const addIdentification = () => {
     if (currentId.trim() && !identifications.includes(currentId.trim())) {
       const newIdentifications = [...identifications, currentId.trim()];
-      setIdentifications(newIdentifications);
+      onIdentificationsChange(newIdentifications);
       setCurrentId("");
-      onIdentificationsChange?.(newIdentifications);
     }
   };
 
   const removeIdentification = (id: string) => {
     const newIdentifications = identifications.filter(i => i !== id);
-    setIdentifications(newIdentifications);
-    onIdentificationsChange?.(newIdentifications);
+    onIdentificationsChange(newIdentifications);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -61,25 +72,9 @@ export const Step3Identifications = ({
     await new Promise(resolve => setTimeout(resolve, 2500));
     
     setIsGenerating(false);
-    setIsGenerated(true);
-    onConfirmGeneration?.(true);
+    onConfirmGeneration(true);
     toast.success("Reporte de desempeño generado exitosamente");
   };
-
-  const toggleSlide = (id: number) => {
-    setSelectedSlides(prev => 
-      prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
-    );
-  };
-
-  // Mock performance report slides
-  const performanceSlides = [
-    { id: 1, title: "Resumen Ejecutivo", description: "Resumen general del desempeño" },
-    { id: 2, title: "Métricas de Rendimiento", description: "KPIs principales del periodo" },
-    { id: 3, title: "Análisis de Mercado", description: "Posicionamiento y tendencias" },
-    { id: 4, title: "Oportunidades", description: "Áreas de mejora identificadas" },
-    { id: 5, title: "Proyecciones", description: "Estimaciones para próximo periodo" },
-  ];
 
   // Show loading state
   if (isGenerating) {
@@ -103,12 +98,12 @@ export const Step3Identifications = ({
   }
 
   // Show preview after generation
-  if (isGenerated) {
+  if (reportGenerated && performanceSlides.length > 0) {
     return (
       <PresentationViewer
         slides={performanceSlides}
         selectedSlides={selectedSlides}
-        onSlideToggle={toggleSlide}
+        onSlideToggle={onSlideToggle}
         mode="delete"
         title="Reporte de Desempeño Generado"
         subtitle="Revisa el reporte generado con la información de los clientes. Puedes eliminar slides si lo deseas."

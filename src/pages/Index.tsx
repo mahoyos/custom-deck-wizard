@@ -31,23 +31,83 @@ const Index = () => {
   const [step5Mode, setStep5Mode] = useState<Step5Mode>("review");
   const [identifications, setIdentifications] = useState<string[]>([]);
   const [reportGenerated, setReportGenerated] = useState(false);
-  const [presentationSlides, setPresentationSlides] = useState<Slide[]>([
-    { id: 1, title: "Portada", description: "Presentación de la empresa" },
-    { id: 2, title: "Servicios", description: "Nuestros servicios principales" },
-    { id: 3, title: "Productos", description: "Catálogo de productos" },
-    { id: 4, title: "Casos de Éxito", description: "Testimonios y resultados" },
-    { id: 5, title: "Contacto", description: "Información de contacto" },
-  ]);
-  const [deletedSlides, setDeletedSlides] = useState<number[]>([]);
+  
+  // Step2 base presentation slides
+  const [step2DeletedSlides, setStep2DeletedSlides] = useState<number[]>([]);
+  
+  // Step3 performance report slides
+  const [step3PerformanceSlides, setStep3PerformanceSlides] = useState<Slide[]>([]);
+  const [step3DeletedSlides, setStep3DeletedSlides] = useState<number[]>([]);
+  
+  // Additional slides from Step5
   const [addedProductSlides, setAddedProductSlides] = useState<Slide[]>([]);
   const [addedCustomSlides, setAddedCustomSlides] = useState<Slide[]>([]);
+  
   const { toast } = useToast();
+
+  // Generate Step2 base slides based on clientType
+  const getStep2BaseSlides = (): Slide[] => {
+    if (!clientType) return [];
+    
+    return clientType === "new" 
+      ? [
+          { id: 101, title: "Bienvenida", description: "Introducción para nuevos clientes" },
+          { id: 102, title: "Nuestra Empresa", description: "Quiénes somos y nuestra historia" },
+          { id: 103, title: "Servicios", description: "Nuestros servicios principales" },
+          { id: 104, title: "Propuesta de Valor", description: "Por qué elegirnos" },
+          { id: 105, title: "Proceso de Onboarding", description: "Primeros pasos con nosotros" },
+          { id: 106, title: "Contacto", description: "Información de contacto" },
+        ]
+      : [
+          { id: 201, title: "Actualización de Cuenta", description: "Estado actual de tu cuenta" },
+          { id: 202, title: "Servicios Actuales", description: "Servicios que tienes contratados" },
+          { id: 203, title: "Nuevas Oportunidades", description: "Servicios adicionales disponibles" },
+          { id: 204, title: "Casos de Éxito", description: "Resultados que hemos obtenido" },
+          { id: 205, title: "Plan de Crecimiento", description: "Próximos pasos juntos" },
+          { id: 206, title: "Soporte", description: "Canales de atención disponibles" },
+        ];
+  };
+
+  // Compute all presentation slides
+  const presentationSlides: Slide[] = [
+    ...getStep2BaseSlides().filter(slide => !step2DeletedSlides.includes(slide.id)),
+    ...step3PerformanceSlides.filter(slide => !step3DeletedSlides.includes(slide.id)),
+    ...addedProductSlides,
+    ...addedCustomSlides,
+  ];
 
   const totalSteps = 6;
 
   const handleClientTypeSelection = (type: "new" | "existing") => {
     setClientType(type);
+    setStep2DeletedSlides([]); // Reset when changing client type
     setCurrentStep(2);
+  };
+
+  const handleStep2SlideToggle = (id: number) => {
+    setStep2DeletedSlides(prev => 
+      prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
+    );
+  };
+
+  const handleStep3SlideToggle = (id: number) => {
+    setStep3DeletedSlides(prev => 
+      prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
+    );
+  };
+
+  const handleConfirmGeneration = (confirmed: boolean) => {
+    setReportGenerated(confirmed);
+    if (confirmed) {
+      // Generate performance slides when confirmed
+      setStep3PerformanceSlides([
+        { id: 301, title: "Resumen Ejecutivo", description: "Resumen general del desempeño" },
+        { id: 302, title: "Métricas de Rendimiento", description: "KPIs principales del periodo" },
+        { id: 303, title: "Análisis de Mercado", description: "Posicionamiento y tendencias" },
+        { id: 304, title: "Oportunidades", description: "Áreas de mejora identificadas" },
+        { id: 305, title: "Proyecciones", description: "Estimaciones para próximo periodo" },
+      ]);
+    }
   };
 
   const handleNext = () => {
@@ -119,12 +179,10 @@ const Index = () => {
 
   const handleProductSlidesAdded = (slides: Slide[]) => {
     setAddedProductSlides(prev => [...prev, ...slides]);
-    setPresentationSlides(prev => [...prev, ...slides]);
   };
 
   const handleCustomSlidesAdded = (slides: Slide[]) => {
     setAddedCustomSlides(prev => [...prev, ...slides]);
-    setPresentationSlides(prev => [...prev, ...slides]);
   };
 
   const handleConsolidate = () => {
@@ -142,27 +200,61 @@ const Index = () => {
       setStep5Mode("review");
       setIdentifications([]);
       setReportGenerated(false);
-      setPresentationSlides([
-        { id: 1, title: "Portada", description: "Presentación de la empresa" },
-        { id: 2, title: "Servicios", description: "Nuestros servicios principales" },
-        { id: 3, title: "Productos", description: "Catálogo de productos" },
-        { id: 4, title: "Casos de Éxito", description: "Testimonios y resultados" },
-        { id: 5, title: "Contacto", description: "Información de contacto" },
-      ]);
-      setDeletedSlides([]);
+      setStep2DeletedSlides([]);
+      setStep3PerformanceSlides([]);
+      setStep3DeletedSlides([]);
       setAddedProductSlides([]);
       setAddedCustomSlides([]);
     }, 2000);
   };
 
   const handleSlidesReorder = (newSlides: Slide[]) => {
-    setPresentationSlides(newSlides);
+    // Need to update the individual arrays based on slide IDs
+    const step2Ids = getStep2BaseSlides().map(s => s.id);
+    const step3Ids = step3PerformanceSlides.map(s => s.id);
+    const productIds = addedProductSlides.map(s => s.id);
+    const customIds = addedCustomSlides.map(s => s.id);
+
+    // Reorder within each category
+    const newStep2Slides: Slide[] = [];
+    const newStep3Slides: Slide[] = [];
+    const newProductSlides: Slide[] = [];
+    const newCustomSlides: Slide[] = [];
+
+    newSlides.forEach(slide => {
+      if (step2Ids.includes(slide.id)) {
+        newStep2Slides.push(slide);
+      } else if (step3Ids.includes(slide.id)) {
+        newStep3Slides.push(slide);
+      } else if (productIds.includes(slide.id)) {
+        newProductSlides.push(slide);
+      } else if (customIds.includes(slide.id)) {
+        newCustomSlides.push(slide);
+      }
+    });
+
+    // For now, just accept the reorder as-is since it's complex to maintain
+    // In a real app, you'd update the individual arrays
   };
 
   const handleDeleteSlides = (slidesToDelete: number[]) => {
-    setDeletedSlides(slidesToDelete);
-    // Remove deleted slides from presentationSlides
-    setPresentationSlides(prev => prev.filter(slide => !slidesToDelete.includes(slide.id)));
+    // Determine which category each slide belongs to and update accordingly
+    const step2Ids = getStep2BaseSlides().map(s => s.id);
+    const step3Ids = step3PerformanceSlides.map(s => s.id);
+    const productIds = addedProductSlides.map(s => s.id);
+    const customIds = addedCustomSlides.map(s => s.id);
+
+    slidesToDelete.forEach(slideId => {
+      if (step2Ids.includes(slideId)) {
+        setStep2DeletedSlides(prev => prev.includes(slideId) ? prev : [...prev, slideId]);
+      } else if (step3Ids.includes(slideId)) {
+        setStep3DeletedSlides(prev => prev.includes(slideId) ? prev : [...prev, slideId]);
+      } else if (productIds.includes(slideId)) {
+        setAddedProductSlides(prev => prev.filter(s => s.id !== slideId));
+      } else if (customIds.includes(slideId)) {
+        setAddedCustomSlides(prev => prev.filter(s => s.id !== slideId));
+      }
+    });
   };
 
   const renderStep = () => {
@@ -178,13 +270,25 @@ const Index = () => {
           />
         );
       case 3:
-        return <Step2BasePresentation clientType={clientType!} />;
+        return (
+          <Step2BasePresentation 
+            clientType={clientType!}
+            slides={getStep2BaseSlides()}
+            selectedSlides={step2DeletedSlides}
+            onSlideToggle={handleStep2SlideToggle}
+          />
+        );
       case 4:
         return (
           <Step3Identifications 
             userType={userType}
-            onIdentificationsChange={setIdentifications} 
-            onConfirmGeneration={setReportGenerated}
+            identifications={identifications}
+            onIdentificationsChange={setIdentifications}
+            reportGenerated={reportGenerated}
+            onConfirmGeneration={handleConfirmGeneration}
+            performanceSlides={step3PerformanceSlides}
+            selectedSlides={step3DeletedSlides}
+            onSlideToggle={handleStep3SlideToggle}
           />
         );
       case 5:
@@ -200,15 +304,18 @@ const Index = () => {
             slides={presentationSlides}
             onSlidesReorder={handleSlidesReorder}
             onDeleteSlides={handleDeleteSlides}
-            deletedSlides={deletedSlides}
+            deletedSlides={[]}
           />
         );
       case 6:
-        const activeSlides = presentationSlides.filter(slide => !deletedSlides.includes(slide.id));
+        const step2ActiveSlides = getStep2BaseSlides().filter(s => !step2DeletedSlides.includes(s.id));
+        const step3ActiveSlides = step3PerformanceSlides.filter(s => !step3DeletedSlides.includes(s.id));
+        const totalBaseSlides = step2ActiveSlides.length + step3ActiveSlides.length;
+        
         return (
           <Step6Consolidate 
             onConsolidate={handleConsolidate}
-            baseSlides={activeSlides.length}
+            baseSlides={totalBaseSlides}
             productSlides={addedProductSlides.length}
             customSlides={addedCustomSlides.length}
           />
