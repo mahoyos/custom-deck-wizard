@@ -147,18 +147,50 @@ export const PresentationViewer = ({
     }
   };
 
-  const currentSlide = slides[currentSlideIndex];
+  // Validar que haya slides disponibles
+  if (slides.length === 0) {
+    return (
+      <div className="max-w-6xl mx-auto px-4 py-8 animate-in fade-in slide-in-from-right-4 duration-500">
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold text-foreground mb-2">{title}</h2>
+          <p className="text-muted-foreground">{subtitle}</p>
+        </div>
+        <Card className="p-6">
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <FileText className="w-16 h-16 text-muted-foreground opacity-50 mb-4" />
+            <h3 className="text-xl font-semibold text-foreground mb-2">
+              No hay slides disponibles
+            </h3>
+            <p className="text-muted-foreground">
+              {mode === "delete" ? "Has marcado todos los slides para eliminar" : "No hay slides en esta presentación"}
+            </p>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  // Asegurar que el índice actual esté dentro del rango válido
+  const validIndex = Math.min(currentSlideIndex, slides.length - 1);
+  const currentSlide = slides[validIndex];
   const isCurrentSelected = selectedSlides.includes(currentSlide.id);
 
+  // Update currentSlideIndex if it's out of bounds
+  useEffect(() => {
+    if (currentSlideIndex >= slides.length && slides.length > 0) {
+      setCurrentSlideIndex(slides.length - 1);
+    }
+  }, [slides.length, currentSlideIndex]);
+
   const handlePrevious = () => {
-    if (currentSlideIndex > 0) {
-      setCurrentSlideIndex(currentSlideIndex - 1);
+    if (validIndex > 0) {
+      setCurrentSlideIndex(validIndex - 1);
     }
   };
 
   const handleNext = () => {
-    if (currentSlideIndex < slides.length - 1) {
-      setCurrentSlideIndex(currentSlideIndex + 1);
+    if (validIndex < slides.length - 1) {
+      setCurrentSlideIndex(validIndex + 1);
     }
   };
 
@@ -222,7 +254,7 @@ export const PresentationViewer = ({
           <Button
             variant="outline"
             onClick={handlePrevious}
-            disabled={currentSlideIndex === 0}
+            disabled={validIndex === 0}
             className="gap-2"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -231,7 +263,7 @@ export const PresentationViewer = ({
 
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">
-              Slide {currentSlideIndex + 1} de {slides.length}
+              Slide {validIndex + 1} de {slides.length}
             </span>
             {selectedSlides.length > 0 && (
               <>
@@ -248,7 +280,7 @@ export const PresentationViewer = ({
           <Button
             variant="outline"
             onClick={handleNext}
-            disabled={currentSlideIndex === slides.length - 1}
+            disabled={validIndex === slides.length - 1}
             className="gap-2"
           >
             Siguiente
@@ -271,7 +303,7 @@ export const PresentationViewer = ({
                 <div className="grid grid-cols-6 gap-2">
                   {slides.map((slide, index) => {
                     const isSelected = selectedSlides.includes(slide.id);
-                    const isCurrent = index === currentSlideIndex;
+                    const isCurrent = index === validIndex;
                     
                     return (
                       <SortableThumbnail
@@ -292,7 +324,7 @@ export const PresentationViewer = ({
             <div className="grid grid-cols-6 gap-2">
               {slides.map((slide, index) => {
                 const isSelected = selectedSlides?.includes(slide.id);
-                const isCurrent = index === currentSlideIndex;
+                const isCurrent = index === validIndex;
                 
                 return (
                   <div
